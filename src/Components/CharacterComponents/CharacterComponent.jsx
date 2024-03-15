@@ -2,6 +2,7 @@ import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import './CharacterComponent.css'
 import CharactersComponent from '../CharactersComponent/CharactersComponent'
+import { useQuery } from 'react-query'
 
 const CharacterComponent = () => {
   const [userData, setUserData] = useState({})
@@ -9,12 +10,28 @@ const CharacterComponent = () => {
   const getData = async() => 
   {
       const response = await axios.get(`https://rickandmortyapi.com/api/character?page=${pageNumber}`)
-      console.log(response.data)
-      setUserData(response.data)
+      // const response = await axios.get(`https://rickandmortyapi.com/api/character`)
+      // console.log(response.data)
+      // setUserData(response.data)
+      return response.data
   }
-  useEffect(()=>{
-    getData()
-  },[pageNumber])
+
+  const {data,isPreviousData,isLoading,isError}=useQuery(['characters',pageNumber],getData,
+  {
+    keepPreviousData:true
+  })
+
+  if(isLoading)
+  {
+    return<div>Loading...</div>
+  }
+  if(isError)
+  {
+    return <div>Error</div>
+  }
+  // useEffect(()=>{
+  //   getData()
+  // },[pageNumber])
 
   const moveToPrevious=()=>{
     setPageNumber((oldPageNumber)=>oldPageNumber-1)
@@ -29,7 +46,7 @@ return (
     </div>
     <div>
       <ul className='container'>
-        {userData.results && userData.results.map ((iterator) => (
+        {data.results && data.results.map ((iterator) => (
           <CharactersComponent iterator={iterator}/>
         ))}
       </ul>
